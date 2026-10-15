@@ -579,7 +579,7 @@ Object.entries(GROUPS).forEach(([id, field]) => $(id).querySelectorAll('button[d
 function summary() {
   const P = plateNow(), S = screenNow();
   const lines = [
-    "Lea's picks <3",
+    "Supreme Leader's picks <3",
     `Panel colour: ${state.panel === 'own' ? 'her own colour ' + state.panelHex : P.name}`,
     `Little drawing: ${DOODLES[state.doodle]}`,
     `Screen background: ${state.screen === 'own' ? 'her own colour ' + state.screenHex : S.name}`,
@@ -597,11 +597,11 @@ $('sendBtn').addEventListener('click', async () => {
   const text = summary();
   $('fallback').hidden = true;
   if (navigator.share) {
-    try { await navigator.share({ title: "Lea's picks", text }); setStatus('Sent! thank youuu'); return; }
+    try { await navigator.share({ title: "Supreme Leader's picks", text }); setStatus('Sent! thank youuu'); return; }
     catch (e) { if (e && e.name === 'AbortError') return; }
   }
-  try { await navigator.clipboard.writeText(text); setStatus('Copied! Now just paste it to me'); }
-  catch (e) { $('fallback').textContent = text; $('fallback').hidden = false; setStatus("Couldn't copy it, so just screenshot this and send it to me"); }
+  try { await navigator.clipboard.writeText(text); setStatus('Copieddd!!!! pls send to me on viber actually whatsapp coz then it can show on pc idrc actually send anywhere to me mwahhhh'); }
+  catch (e) { $('fallback').textContent = text; $('fallback').hidden = false; setStatus("Some stupid error happened, can ya just ss n send to me. Thanksssssss"); }
 });
 
 /* ---------- framing and the render loop ---------- */
