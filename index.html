@@ -98,7 +98,7 @@ body { background: var(--bg); color: var(--fg); font-family: var(--body); overfl
     </section>
 
     <section class="opt" aria-labelledby="h-screen">
-      <div class="opt-head"><span class="label" id="h-screen">Screen background</span><span class="picked" id="screenName">Night sky</span></div>
+      <div class="opt-head"><span class="label" id="h-screen">Screen background. (these are all claudes work btw thats why they look dogshit)</span><span class="picked" id="screenName">Night sky</span></div>
       <div class="row" id="screens" role="group" aria-labelledby="h-screen"></div>
     </section>
 
@@ -113,8 +113,8 @@ body { background: var(--bg); color: var(--fg); font-family: var(--body); overfl
     </section>
 
     <section class="opt send" aria-labelledby="h-send">
-      <div class="opt-head"><span class="label" id="h-send">All done?</span></div>
-      <textarea id="note" placeholder="Anything else? Other colours, sticker ideas, whatever (optional)" aria-label="Anything else you want to tell me"></textarea>
+      <div class="opt-head"><span class="label" id="h-send">All done my love?</span></div>
+      <textarea id="note" placeholder="You can type anything here. Maybe ya want a different design than the sparkles, moon, hearts, stars? idk shoot me anything that can make this better in yo opinion" aria-label="Anything else you want to tell me"></textarea>
       <button class="go" id="sendBtn" type="button">Send me your picks</button>
       <p class="status" id="status" role="status" aria-live="polite"></p>
       <pre class="fallback" id="fallback" hidden></pre>
@@ -597,7 +597,7 @@ $('sendBtn').addEventListener('click', async () => {
   const text = summary();
   $('fallback').hidden = true;
   if (navigator.share) {
-    try { await navigator.share({ title: "Supreme Leader's picks", text }); setStatus('Sent! thank youuu'); return; }
+    try { await navigator.share({ title: "Supreme Leader's picks", text }); setStatus('thank youuu my loveee mwah mwah'); return; }
     catch (e) { if (e && e.name === 'AbortError') return; }
   }
   try { await navigator.clipboard.writeText(text); setStatus('Copieddd!!!! pls send to me on viber actually whatsapp coz then it can show on pc idrc actually send anywhere to me mwahhhh'); }
