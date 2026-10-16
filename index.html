@@ -6,7 +6,7 @@
 <title>Pick Your Colour</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Figtree:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Figtree:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Pacifico&family=Caveat:wght@700&family=DynaPuff:wght@600&family=Press+Start+2P&family=Quicksand:wght@700&family=Comfortaa:wght@700&family=Sniglet:wght@800&family=Patrick+Hand&family=Lobster&display=swap">
 <style>
 /* Layout: the 3D panel fills the left (or the top on a phone); every choice lives in one scrolling sheet beside it, ending with a send button. */
 :root {
@@ -33,13 +33,14 @@ body { background: var(--bg); color: var(--fg); font-family: var(--body); overfl
 #app { display: flex; width: 100%; height: 100%; height: 100dvh; }
 #stage { position: relative; flex: 1 1 auto; min-width: 0; min-height: 0; }
 #stage canvas { position: absolute; inset: 0; display: block; width: 100%; height: 100%; touch-action: none; outline: none; }
-.sheet { flex: 0 0 380px; min-height: 0; overflow-y: auto; overscroll-behavior: contain; background: var(--sheet); border-left: 1px solid var(--line); padding: 24px 22px calc(28px + env(safe-area-inset-bottom, 0px)); display: flex; flex-direction: column; gap: 16px; }
+.sheet { flex: 0 0 400px; min-height: 0; overflow-y: auto; overscroll-behavior: contain; background: var(--sheet); border-left: 1px solid var(--line); padding: 24px 22px calc(28px + env(safe-area-inset-bottom, 0px)); display: flex; flex-direction: column; gap: 16px; }
 .intro h1 { margin: 0; font-family: var(--display); font-weight: 600; font-size: 27px; line-height: 1.12; text-wrap: balance; }
 .intro p { margin: 8px 0 0; color: var(--muted); font-size: 14px; line-height: 1.5; }
-.opt { display: flex; flex-direction: column; gap: 9px; padding-top: 16px; border-top: 1px solid var(--line); }
+.opt { display: flex; flex-direction: column; gap: 10px; padding-top: 16px; border-top: 1px solid var(--line); }
 .opt-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
 .label { font-family: var(--mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
-.picked { font-weight: 600; font-size: 14px; }
+.sublabel { font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin-top: 4px; }
+.picked { font-weight: 600; font-size: 14px; text-align: right; }
 .row { display: flex; flex-wrap: wrap; gap: 4px; }
 /* round colour swatches */
 .sw { position: relative; width: 36px; height: 36px; padding: 0; border: 0; border-radius: 50%; background: transparent; cursor: pointer; display: grid; place-items: center; flex: none; }
@@ -48,36 +49,81 @@ body { background: var(--bg); color: var(--fg); font-family: var(--body); overfl
 /* little screen thumbnails */
 .th { position: relative; width: 52px; height: 34px; padding: 3px; border: 0; border-radius: 11px; background: transparent; cursor: pointer; flex: none; }
 .th:hover { background: var(--press); }
-.th .prev { display: block; width: 100%; height: 100%; border-radius: 8px; border: 1px solid rgba(60, 30, 70, 0.2); pointer-events: none; }
+.th .prev { display: grid; place-items: center; width: 100%; height: 100%; border-radius: 8px; border: 1px solid rgba(60, 30, 70, 0.2); pointer-events: none; font: 600 10px var(--body); color: var(--fg); background: var(--field); }
 .sw.on, .th.on { box-shadow: inset 0 0 0 2.5px var(--pick-ring); }
-.rainbow { background: conic-gradient(#ff6b6b, #ffd166, #7bd389, #5ec8f2, #8a7bf0, #f07bd0, #ff6b6b); }
+.rainbow { background: conic-gradient(#ff6b6b, #ffd166, #7bd389, #5ec8f2, #8a7bf0, #f07bd0, #ff6b6b) !important; }
 .sw input[type="color"], .th input[type="color"] { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; padding: 0; border: 0; opacity: 0; cursor: pointer; }
 .sw:focus-visible, .th:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
-.sw:has(input:focus-visible), .th:has(input:focus-visible) { outline: 2px solid var(--focus); outline-offset: 2px; }
+.sw:has(input:focus-visible), .th:has(input:focus-visible), .slot:has(input:focus-visible) { outline: 2px solid var(--focus); outline-offset: 2px; }
 /* text choices */
 .seg button { font: 500 15px var(--body); color: var(--fg); background: var(--idle); border: 0; border-radius: 12px; padding: 9px 14px; cursor: pointer; white-space: nowrap; }
 .seg button:hover { background: var(--press); }
 .seg button.on { background: var(--pick); color: var(--ink-on-pick); }
-.seg button:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.seg button:focus-visible, .mini:focus-visible, .pal:focus-visible, .tray button:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.fonts button { font-size: 17px; }
 .small { margin: 0; font-size: 12.5px; line-height: 1.45; color: var(--muted); }
+/* palettes */
+.pals { display: grid; grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); gap: 6px; }
+.pal { border: 0; background: var(--idle); border-radius: 12px; padding: 6px; cursor: pointer; display: flex; flex-direction: column; gap: 5px; text-align: left; font: 500 12.5px var(--body); color: var(--fg); min-width: 0; }
+.pal:hover { background: var(--press); }
+.pal.on { box-shadow: inset 0 0 0 2.5px var(--pick-ring); }
+.pal .stripes { display: flex; height: 22px; border-radius: 7px; overflow: hidden; border: 1px solid rgba(60, 30, 70, 0.18); }
+.pal .stripes span { flex: 1; }
+.pal .nm { padding: 0 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.slots { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; }
+.slot { position: relative; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 6px 2px; border-radius: 12px; cursor: pointer; font-size: 11.5px; color: var(--muted); text-align: center; }
+.slot:hover { background: var(--press); }
+.slot .dot { width: 30px; height: 30px; border-radius: 50%; border: 1px solid rgba(60, 30, 70, 0.25); }
+.slot input[type="color"] { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; border: 0; padding: 0; cursor: pointer; }
+/* editors */
+.pad { display: block; width: 100%; max-width: 100%; border-radius: 14px; border: 1px solid var(--line); background: #e9dfee; touch-action: none; cursor: grab; }
+#stickerEd { aspect-ratio: 146 / 94; }
+#photoPad { aspect-ratio: 16 / 9; }
+.tray { display: flex; flex-wrap: wrap; gap: 4px; }
+.tray button { width: 48px; height: 48px; border: 0; border-radius: 12px; background: var(--idle); cursor: pointer; padding: 4px; display: grid; place-items: center; }
+.tray button:hover { background: var(--press); }
+.tray img { max-width: 100%; max-height: 100%; pointer-events: none; }
+.ctl { display: grid; grid-template-columns: 64px 1fr; align-items: center; gap: 8px 10px; font-size: 13px; color: var(--muted); }
+.ctl input[type="range"] { width: 100%; accent-color: var(--pick-ring); }
+.btns { display: flex; flex-wrap: wrap; gap: 6px; }
+.mini { font: 500 13.5px var(--body); color: var(--fg); background: var(--idle); border: 0; border-radius: 10px; padding: 8px 12px; cursor: pointer; }
+.mini:hover { background: var(--press); }
+.mini.strong { background: var(--pick); color: var(--ink-on-pick); }
+.msg { width: 100%; min-height: 58px; resize: vertical; font: 16px/1.35 var(--body); color: var(--fg); background: var(--field); border: 1px solid var(--line); border-radius: 12px; padding: 9px 12px; }
+.msg:focus, .code-in:focus { outline: 2px solid var(--focus); outline-offset: 1px; }
 /* sending it back */
 .send textarea { width: 100%; min-height: 76px; resize: vertical; font: 16px/1.4 var(--body); color: var(--fg); background: var(--field); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; }
 .send textarea::placeholder { color: #a894b6; }
 .send textarea:focus { outline: 2px solid var(--focus); outline-offset: 1px; }
 .go { font: 600 17px var(--display); color: var(--ink-on-pick); background: var(--pick); border: 0; border-radius: 14px; padding: 13px 16px; cursor: pointer; width: 100%; }
 .go:hover { background: var(--pick-ring); }
+.go:disabled { opacity: 0.6; cursor: progress; }
 .go:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
-.status { margin: 0; min-height: 1.4em; font-size: 13.5px; color: var(--muted); }
+.status { margin: 0; min-height: 1.4em; font-size: 13.5px; color: var(--muted); line-height: 1.45; }
 .fallback { margin: 0; padding: 10px 12px; background: var(--field); border: 1px solid var(--line); border-radius: 12px; font: 13px/1.45 var(--mono); white-space: pre-wrap; word-break: break-all; user-select: all; -webkit-user-select: all; }
+details.code summary { cursor: pointer; font-size: 13px; color: var(--muted); }
+.code-row { display: flex; gap: 6px; margin-top: 8px; }
+.code-in { flex: 1; min-width: 0; font: 13px var(--mono); color: var(--fg); background: var(--field); border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; }
+/* saved picks */
+.saved { display: flex; flex-direction: column; gap: 8px; }
+.pick-row { display: flex; flex-direction: column; gap: 7px; background: var(--idle); border-radius: 14px; padding: 10px 12px; }
+.pick-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.pick-when { font-weight: 600; font-size: 14px; }
+.pick-dots { display: flex; gap: 3px; }
+.pick-dots span { width: 14px; height: 14px; border-radius: 50%; border: 1px solid rgba(60, 30, 70, 0.25); }
+.pick-note { font-size: 13px; color: var(--muted); line-height: 1.4; overflow-wrap: anywhere; }
+.pick-pic { width: 64px; height: 36px; object-fit: cover; border-radius: 6px; border: 1px solid var(--line); background: var(--field); }
 @media (max-width: 760px) {
   #app { flex-direction: column; }
-  #stage { flex: 0 0 46%; }
+  #stage { flex: 0 0 42%; }
   .sheet { flex: 1 1 auto; border-left: 0; border-top: 1px solid var(--line); border-radius: 22px 22px 0 0; margin-top: -14px; position: relative; z-index: 1; box-shadow: 0 -8px 24px rgba(80, 40, 100, 0.08); padding: 20px 16px calc(28px + env(safe-area-inset-bottom, 0px)); }
   .intro h1 { font-size: 23px; }
 }
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
 </style>
 </head>
 <body>
+
 <div id="app">
   <div id="stage" role="img" aria-label="A 3D front panel with a little screen, shown with the choices you pick"></div>
   <aside class="sheet">
@@ -85,6 +131,13 @@ body { background: var(--bg); color: var(--fg); font-family: var(--body); overfl
       <h1>LEA LEA LEA Which one do you like?</h1>
       <p>pick any of these stock colours, then try it with and without stickers. Drag to turn it round and stuff hopefully it works well on mobile. But ya if there are any other colours lemme know twin, i can put them on for u. maybe i shoulda put a colour wheel actually huh. okkkk 10 mins later i did just that. btw the background can be changed on the display to be whatever, so can the stickers literally everything can be customised, but the shape will remain like this thats the only constraint ts has.</p>
     </header>
+
+    <section class="opt" aria-labelledby="h-pal">
+      <div class="opt-head"><span class="label" id="h-pal">Colour scheme</span><span class="picked" id="palName">Midnight lily</span></div>
+      <div class="pals" id="pals" role="group" aria-labelledby="h-pal"></div>
+      <div class="sublabel">Or set each colour yourself</div>
+      <div class="slots" id="slots"></div>
+    </section>
 
     <section class="opt" aria-labelledby="h-colour">
       <div class="opt-head"><span class="label" id="h-colour">Panel colour</span><span class="picked" id="colourName">Black</span></div>
@@ -100,11 +153,40 @@ body { background: var(--bg); color: var(--fg); font-family: var(--body); overfl
     <section class="opt" aria-labelledby="h-screen">
       <div class="opt-head"><span class="label" id="h-screen">Screen background. (these are all claudes work btw thats why they look dogshit)</span><span class="picked" id="screenName">Night sky</span></div>
       <div class="row" id="screens" role="group" aria-labelledby="h-screen"></div>
+      <input type="file" id="photoInput" accept="image/*" hidden>
+      <div id="decoBox">
+        <div class="sublabel">Little extras on the screen</div>
+        <div class="row seg" id="decos" role="group" aria-label="Little extras on the screen" style="margin-top:6px"></div>
+      </div>
+      <div id="photoBox" hidden>
+        <p class="small" id="photoHint">Drag the picture to move it, use the slider to zoom.</p>
+        <canvas class="pad" id="photoPad" aria-label="Drag to move your photo inside the screen"></canvas>
+        <div class="ctl" style="margin-top:8px"><label for="zoom">Zoom</label><input type="range" id="zoom" min="1" max="4" step="0.01" value="1"></div>
+        <div class="btns" style="margin-top:8px"><button class="mini" type="button" id="changePhoto">Use a different pic</button><button class="mini" type="button" id="savePhoto" hidden>Download this pic</button></div>
+        <p class="small" id="photoUp" role="status" aria-live="polite" style="margin-top:6px"></p>
+      </div>
+      <div class="btns" id="screenSaveRow"><button class="mini" type="button" id="saveScreen">Save screen image</button></div>
+    </section>
+
+    <section class="opt" aria-labelledby="h-text">
+      <div class="opt-head"><span class="label" id="h-text">Screen text</span></div>
+      <textarea class="msg" id="msg" maxlength="90" aria-label="What the screen says"></textarea>
+      <div class="row seg" id="textSeg" role="group" aria-label="Show the text"></div>
+      <div class="sublabel">Font</div>
+      <div class="row seg fonts" id="fonts" role="group" aria-label="Font"></div>
     </section>
 
     <section class="opt" aria-labelledby="h-stickers">
-      <div class="opt-head"><span class="label" id="h-stickers">Stickers</span></div>
+      <div class="opt-head"><span class="label" id="h-stickers">Stickers</span><span class="picked" id="stickerCount"></span></div>
       <div class="row seg" id="stickerSeg" role="group" aria-labelledby="h-stickers"></div>
+      <canvas class="pad" id="stickerEd" aria-label="Sticker layout. Drag a sticker to move it"></canvas>
+      <p class="small" id="edHint">Tap a sticker to grab it, drag to move. Two fingers on it to resize and turn. Tap one below to add it. Faded ones are under the screen and won't show.</p>
+      <div class="tray" id="tray" role="group" aria-label="Add a sticker"></div>
+      <div id="selBox" hidden>
+        <div class="ctl"><label for="stSize">Size</label><input type="range" id="stSize" min="25" max="180" step="1"><label for="stTurn">Turn</label><input type="range" id="stTurn" min="-180" max="180" step="1"></div>
+        <div class="btns" style="margin-top:8px"><button class="mini" type="button" id="stFront">Bring to front</button><button class="mini" type="button" id="stDel">Remove</button></div>
+      </div>
+      <div class="btns"><button class="mini" type="button" id="stReset">Original layout</button><button class="mini" type="button" id="stClear">Clear all</button></div>
     </section>
 
     <section class="opt" aria-labelledby="h-case">
@@ -118,6 +200,10 @@ body { background: var(--bg); color: var(--fg); font-family: var(--body); overfl
       <button class="go" id="sendBtn" type="button">Send me your picks</button>
       <p class="status" id="status" role="status" aria-live="polite"></p>
       <pre class="fallback" id="fallback" hidden></pre>
+      <details class="code">
+        <summary>Load picks from a code</summary>
+        <div class="code-row"><input class="code-in" id="codeIn" aria-label="Picks code" placeholder="Paste a code here"><button class="mini" type="button" id="codeGo">Load</button></div>
+      </details>
     </section>
   </aside>
 </div>
@@ -135,10 +221,15 @@ import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 
 const MM = 0.01;
-const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const stageEl = document.getElementById('stage');
-const FONT = 'Fredoka, Nunito, ui-rounded, system-ui, sans-serif';
 try { await Promise.race([Promise.all(['600 64px Fredoka', '700 64px Fredoka'].map(f => document.fonts.load(f))), new Promise(r => setTimeout(r, 2200))]); } catch (e) {}
+
+// Where her photo gets stored so it loads (and downloads) when you open her link.
+// Free Cloudinary account: put your cloud name and an UNSIGNED upload preset here.
+// Leave them blank and her pic gets attached to the share message instead.
+const CLOUDINARY = { cloudName: '', uploadPreset: '' };
+const cloudOn = !!(CLOUDINARY.cloudName && CLOUDINARY.uploadPreset);
+const picUrl = id => `https://res.cloudinary.com/${CLOUDINARY.cloudName}/image/upload/${id}`;
 
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
@@ -150,12 +241,14 @@ stageEl.appendChild(renderer.domElement);
 
 /* panel and window sizes, same as the real one (mm) */
 const FACE = { w: 146, h: 94, r: 10 }, WIN = { w: 108.4, h: 60.1, r: 5 }, PIC_W = 110.4, PIC_H = 62.1;
+const PW = FACE.w * 10, PH = FACE.h * 10;
 
 /* ---------- small helpers ---------- */
 function canvas(w, h) { const c = document.createElement('canvas'); c.width = w; c.height = h; return c; }
 function tex(c, srgb = true) { const t = new THREE.CanvasTexture(c); if (srgb) t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = renderer.capabilities.getMaxAnisotropy(); return t; }
 function ell(g, x, y, rx, ry, rot = 0) { g.beginPath(); g.ellipse(x, y, Math.abs(rx), Math.abs(ry), rot, 0, Math.PI * 2); g.fill(); }
-function rr(g, x, y, w, h, r) { g.beginPath(); g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r); g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath(); }
+function rrPath(g, x, y, w, h, r) { g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r); g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath(); }
+function rr(g, x, y, w, h, r) { g.beginPath(); rrPath(g, x, y, w, h, r); }
 function heart(g, x, y, s) {
   g.beginPath();
   g.moveTo(x, y + s * 0.45);
@@ -167,6 +260,7 @@ function heart(g, x, y, s) {
 }
 function spark(g, x, y, r) { g.beginPath(); g.moveTo(x, y - r); g.quadraticCurveTo(x, y, x + r, y); g.quadraticCurveTo(x, y, x, y + r); g.quadraticCurveTo(x, y, x - r, y); g.quadraticCurveTo(x, y, x, y - r); g.fill(); }
 function starPath(g, cx, cy, R, r) { g.beginPath(); for (let i = 0; i < 10; i++) { const a = -Math.PI / 2 + i * Math.PI / 5, rad = i % 2 ? r : R; i ? g.lineTo(cx + Math.cos(a) * rad, cy + Math.sin(a) * rad) : g.moveTo(cx + Math.cos(a) * rad, cy + Math.sin(a) * rad); } g.closePath(); }
+function cloud(g, x, y, s) { ell(g, x, y, 70 * s, 32 * s); ell(g, x - 54 * s, y + 8 * s, 44 * s, 24 * s); ell(g, x + 56 * s, y + 9 * s, 48 * s, 23 * s); ell(g, x - 8 * s, y - 24 * s, 42 * s, 32 * s); }
 function lilyPath(g, cx, cy, R, r, rot = 0) {
   g.beginPath();
   for (let i = 0; i < 6; i++) {
@@ -181,7 +275,9 @@ function lilyPath(g, cx, cy, R, r, rot = 0) {
 const hexToRgb = h => { const n = parseInt(h.slice(1), 16); return [(n >> 16) & 255, (n >> 8) & 255, n & 255]; };
 const rgbToHex = c => '#' + c.map(v => Math.round(Math.max(0, Math.min(255, v))).toString(16).padStart(2, '0')).join('');
 const shade = (h, k) => rgbToHex(hexToRgb(h).map(v => v * k));
+const mix = (a, b, t) => { const A = hexToRgb(a), B = hexToRgb(b); return rgbToHex(A.map((v, i) => v + (B[i] - v) * t)); };
 const lum = h => { const [r, g, b] = hexToRgb(h).map(v => { v /= 255; return v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; }); return 0.2126 * r + 0.7152 * g + 0.0722 * b; };
+const isHex = v => /^#[0-9a-f]{6}$/i.test(v || '');
 
 /* ---------- stand-in sticker art ---------- */
 const INK = '#4b2a6a', BLUSH = 'rgba(247,140,180,0.55)';
@@ -294,32 +390,54 @@ function makeSticker(w, h, draw, border = 9) {
   o.shadowColor = 'transparent'; o.drawImage(art, o0, o0);
   return out;
 }
-function placeSticker(g, st, x, y, rot, scale = 1) { g.save(); g.translate(x, y); g.rotate(rot); g.scale(scale, scale); g.drawImage(st, -st.width / 2, -st.height / 2); g.restore(); }
-function stickerOverlayTexture() {
-  const S = {
-    sprite: makeSticker(180, 200, a => drawSprite(a, 90, 122, 0.92)),
-    pup: makeSticker(170, 196, a => drawPuppy(a, 82, 186, 1.0)),
-    heart: makeSticker(130, 120, a => { a.fillStyle = '#ff8fb8'; heart(a, 65, 64, 120); a.fillStyle = 'rgba(255,255,255,0.7)'; ell(a, 40, 40, 12, 7, -0.6); }),
-    star: makeSticker(124, 120, a => {
-      a.fillStyle = '#ffd97a'; a.strokeStyle = '#f2b94c'; a.lineWidth = 4; a.lineJoin = 'round'; starPath(a, 62, 64, 58, 26); a.fill(); a.stroke();
-      a.strokeStyle = '#7a4a2a'; a.lineWidth = 4; a.lineCap = 'round'; happyEye(a, 50, 66, 6); happyEye(a, 74, 66, 6);
-      a.fillStyle = 'rgba(247,140,180,0.6)'; ell(a, 42, 76, 6, 3.5); ell(a, 82, 76, 6, 3.5);
-    }),
-    lily: makeSticker(150, 150, a => drawLily(a, 75, 75, 2.0, 1, 0.2)),
-    env: makeSticker(170, 120, a => envelope(a, 85, 60, 2.3, -0.06)),
-  };
-  const c = canvas(FACE.w * 10, FACE.h * 10), g = c.getContext('2d');
-  placeSticker(g, S.heart, 96, 92, -0.2, 1.0);
-  placeSticker(g, S.star, 560, 82, 0.25, 0.72);
-  placeSticker(g, S.pup, 1372, 132, 0.1, 0.86);
-  placeSticker(g, S.lily, 1370, 520, -0.3, 0.74);
-  placeSticker(g, S.star, 1364, 712, 0.4, 0.5);
-  placeSticker(g, S.star, 92, 450, -0.3, 0.5);
-  placeSticker(g, S.sprite, 100, 822, -0.12, 0.78);
-  placeSticker(g, S.heart, 360, 862, 0.15, 0.62);
-  placeSticker(g, S.env, 1110, 866, 0.08, 0.55);
-  return c;
-}
+function cheeks(a, x1, x2, y) { a.fillStyle = 'rgba(247,140,180,0.6)'; ell(a, x1, y, 6, 3.5); ell(a, x2, y, 6, 3.5); }
+const STK = {
+  heart: { name: 'Heart', c: makeSticker(130, 120, a => { a.fillStyle = '#ff8fb8'; heart(a, 65, 64, 120); a.fillStyle = 'rgba(255,255,255,0.7)'; ell(a, 40, 40, 12, 7, -0.6); }) },
+  star: { name: 'Star', c: makeSticker(124, 120, a => {
+    a.fillStyle = '#ffd97a'; a.strokeStyle = '#f2b94c'; a.lineWidth = 4; a.lineJoin = 'round'; starPath(a, 62, 64, 58, 26); a.fill(); a.stroke();
+    a.strokeStyle = '#7a4a2a'; a.lineWidth = 4; a.lineCap = 'round'; happyEye(a, 50, 66, 6); happyEye(a, 74, 66, 6);
+    cheeks(a, 42, 82, 76);
+  }) },
+  pup: { name: 'Puppy', c: makeSticker(170, 196, a => drawPuppy(a, 82, 186, 1.0)) },
+  sprite: { name: 'Lily sprite', c: makeSticker(180, 200, a => drawSprite(a, 90, 122, 0.92)) },
+  lily: { name: 'Lily', c: makeSticker(150, 150, a => drawLily(a, 75, 75, 2.0, 1, 0.2)) },
+  env: { name: 'Letter', c: makeSticker(170, 120, a => envelope(a, 85, 60, 2.3, -0.06)) },
+  moon: { name: 'Moon', c: makeSticker(120, 120, a => {
+    a.fillStyle = '#ffe08a'; a.beginPath(); a.arc(60, 60, 50, 0, Math.PI * 2); a.fill();
+    a.globalCompositeOperation = 'destination-out'; a.beginPath(); a.arc(84, 42, 42, 0, Math.PI * 2); a.fill(); a.globalCompositeOperation = 'source-over';
+    a.strokeStyle = '#8a5a2a'; a.lineWidth = 4; a.lineCap = 'round'; happyEye(a, 34, 70, 6);
+    a.fillStyle = 'rgba(247,140,180,0.6)'; ell(a, 30, 84, 6, 3.5);
+  }) },
+  cloud: { name: 'Cloud', c: makeSticker(150, 100, a => {
+    a.fillStyle = '#eaf4ff'; cloud(a, 75, 62, 0.68);
+    a.strokeStyle = '#5a7fa8'; a.lineWidth = 4; a.lineCap = 'round'; happyEye(a, 62, 62, 6); happyEye(a, 88, 62, 6);
+    cheeks(a, 52, 98, 72);
+  }) },
+  spark: { name: 'Sparkle', c: makeSticker(120, 120, a => { a.fillStyle = '#c9a8ff'; spark(a, 52, 64, 46); a.fillStyle = '#ffb3d1'; spark(a, 96, 26, 18); }) },
+  berry: { name: 'Strawberry', c: makeSticker(110, 130, a => {
+    a.fillStyle = '#ff6b81'; a.beginPath(); a.moveTo(55, 124); a.bezierCurveTo(10, 100, 4, 40, 30, 32); a.quadraticCurveTo(55, 24, 80, 32); a.bezierCurveTo(106, 40, 100, 100, 55, 124); a.fill();
+    a.fillStyle = '#ffe9a8'; [[34, 52], [55, 46], [76, 52], [28, 78], [82, 78], [44, 100], [66, 100], [55, 112]].forEach(([x, y]) => ell(a, x, y, 2.2, 3.4));
+    a.fillStyle = '#6dbb7a'; for (let i = 0; i < 5; i++) { const an = Math.PI + i * Math.PI / 4; ell(a, 55 + Math.cos(an) * 16, 30 + Math.sin(an) * 6, 14, 5.5, an); }
+    a.strokeStyle = '#4f8f5a'; a.lineWidth = 4; a.lineCap = 'round'; a.beginPath(); a.moveTo(55, 26); a.lineTo(58, 8); a.stroke();
+    a.strokeStyle = '#5a1f2c'; a.lineWidth = 3.6; happyEye(a, 42, 74, 6); happyEye(a, 68, 74, 6);
+    cheeks(a, 34, 76, 86);
+  }) },
+  bow: { name: 'Bow', c: makeSticker(150, 100, a => {
+    a.fillStyle = '#ff9cc4';
+    [-1, 1].forEach(d => {
+      a.beginPath(); a.moveTo(75, 48); a.bezierCurveTo(75 + d * 35, 4, 75 + d * 70, 18, 75 + d * 63, 48); a.bezierCurveTo(75 + d * 70, 78, 75 + d * 35, 92, 75, 48); a.fill();
+      a.beginPath(); a.moveTo(75 + d * 4, 54); a.lineTo(75 + d * 24, 96); a.lineTo(75 + d * 10, 91); a.lineTo(75 - d * 2, 58); a.closePath(); a.fill();
+    });
+    a.fillStyle = '#ff7fb0'; ell(a, 75, 48, 13, 15);
+    a.fillStyle = 'rgba(255,255,255,0.6)'; ell(a, 45, 34, 9, 5, -0.5); ell(a, 105, 34, 9, 5, 0.5);
+  }) },
+};
+const DEFAULT_LAYOUT = [
+  ['heart', 96, 92, -0.2, 1.0], ['star', 560, 82, 0.25, 0.72], ['pup', 1372, 132, 0.1, 0.86],
+  ['lily', 1370, 520, -0.3, 0.74], ['star', 1364, 712, 0.4, 0.5], ['star', 92, 450, -0.3, 0.5],
+  ['sprite', 100, 822, -0.12, 0.78], ['heart', 360, 862, 0.15, 0.62], ['env', 1110, 866, 0.08, 0.55],
+].map(([k, x, y, r, s]) => ({ k, x, y, r, s }));
+const MAX_STICKERS = 40;
 
 /* ---------- the choices ---------- */
 // stock colours: white print on every one except the white panel, which gets black
@@ -337,50 +455,110 @@ function customPlate(hex) {
   const light = lum(hex) > 0.4;
   return { name: 'Her own colour', bg: [hex, shade(hex, 0.9)], art: light ? shade(hex, 0.42) : '#f8f4fb', edge: parseInt(shade(hex, 0.72).slice(1), 16), copper: light ? 'rgba(0,0,0,0.07)' : 'rgba(255,255,255,0.12)', via: light ? shade(hex, 0.85) : shade(hex, 1.5), rough: 0.42 };
 }
+const stockKey = hex => Object.keys(PLATES).find(k => PLATES[k].bg[0] === hex) || null;
+function plateNow() { const k = stockKey(state.c.panel); const base = k ? PLATES[k] : customPlate(state.c.panel); return { ...base, art: state.c.print }; }
+
 const DOODLES = { sparkles: 'Sparkles', hearts: 'Hearts', stars: 'Stars', moon: 'Moon', none: 'None' };
+const DECOS = { night: 'Stars + moon', sunset: 'Sun', clouds: 'Clouds', hearts: 'Hearts', sparkles: 'Sparkles', none: 'Plain' };
 const SCREENS = {
-  night:  { name: 'Night sky', stops: ['#141029', '#2a1d4f', '#4a2f63'], text: '#fbe9f3', glow: 'rgba(0,0,0,0.28)', heart: '#ff8fb8', extra: 'night' },
-  sunset: { name: 'Sunset', stops: ['#4b3a86', '#d9799f', '#ffc78f'], text: '#fff7f0', glow: 'rgba(90,30,70,0.32)', heart: '#ffd9e6', extra: 'sunset' },
-  clouds: { name: 'Clouds', stops: ['#8ec9f2', '#b9defa', '#e9f5ff'], text: '#2f5d8f', glow: 'rgba(255,255,255,0.75)', heart: '#ff8fb8', extra: 'clouds' },
-  pink:   { name: 'Strawberry milk', stops: ['#ffe6f0', '#ffd3e4', '#fbbfd8'], text: '#b23f74', glow: 'rgba(255,255,255,0.7)', heart: '#ff6fa3', extra: 'hearts' },
-  lilac:  { name: 'Lilac', stops: ['#efe4ff', '#dccbfb', '#c7aef3'], text: '#55358c', glow: 'rgba(255,255,255,0.6)', heart: '#ff8fb8', extra: 'sparkles' },
+  night:  { name: 'Night sky', s1: '#141029', mid: '#2a1d4f', s2: '#4a2f63', text: '#fbe9f3', deco: 'night' },
+  sunset: { name: 'Sunset', s1: '#4b3a86', mid: '#d9799f', s2: '#ffc78f', text: '#fff7f0', deco: 'sunset' },
+  clouds: { name: 'Clouds', s1: '#8ec9f2', mid: '#b9defa', s2: '#e9f5ff', text: '#2f5d8f', deco: 'clouds' },
+  pink:   { name: 'Strawberry milk', s1: '#ffe6f0', mid: '#ffd3e4', s2: '#fbbfd8', text: '#b23f74', deco: 'hearts' },
+  lilac:  { name: 'Lilac', s1: '#efe4ff', mid: '#dccbfb', s2: '#c7aef3', text: '#55358c', deco: 'sparkles' },
 };
-function customScreen(hex) {
-  const light = lum(hex) > 0.35;
-  return { name: 'Her own colour', stops: [shade(hex, 0.8), hex, shade(hex, 1.15)], text: light ? shade(hex, 0.32) : '#fff6fb', glow: light ? 'rgba(255,255,255,0.55)' : 'rgba(0,0,0,0.28)', heart: '#ff8fb8', extra: light ? 'sparkles' : 'night' };
-}
+// whole colour schemes: panel, drawing, screen top, screen bottom, text
+const PALETTES = [
+  { name: 'Midnight lily', c: ['#1c1821', '#f6eeff', '#141029', '#4a2f63', '#fbe9f3'], mid: '#2a1d4f', deco: 'night' },
+  { name: 'Strawberry milk', c: ['#ffd3e4', '#b23f74', '#ffe6f0', '#fbbfd8', '#b23f74'], deco: 'hearts' },
+  { name: 'Lavender haze', c: ['#c9b6ef', '#4b2f7a', '#efe4ff', '#c7aef3', '#55358c'], deco: 'sparkles' },
+  { name: 'Peach sorbet', c: ['#ffc9a9', '#8a3b2e', '#ffe6d3', '#ffb59a', '#8a3b2e'], deco: 'sparkles' },
+  { name: 'Matcha latte', c: ['#b9d3a8', '#2f4a2a', '#eef5e4', '#c9e0b7', '#355a33'], deco: 'clouds' },
+  { name: 'Ocean pearl', c: ['#9fd3e6', '#19445e', '#e6f6fb', '#a6dcef', '#19445e'], deco: 'clouds' },
+  { name: 'Sunset pop', c: ['#4b3a86', '#ffd9e6', '#4b3a86', '#ffc78f', '#fff7f0'], mid: '#d9799f', deco: 'sunset' },
+  { name: 'Cherry cola', c: ['#7a1c2b', '#ffe3e8', '#2a0d14', '#8f2338', '#ffd9e0'], deco: 'hearts' },
+  { name: 'Butter cream', c: ['#fbe7a1', '#6b4f12', '#fff8dc', '#fbe7a1', '#6b4f12'], deco: 'sparkles' },
+  { name: 'Mint choc', c: ['#a8e6cf', '#3b2a24', '#3b2a24', '#6b4b3e', '#c8f5e2'], deco: 'night' },
+  { name: 'Cotton candy', c: ['#bde0fe', '#ff6fa3', '#ffc8dd', '#bde0fe', '#8a3c6b'], deco: 'hearts' },
+  { name: 'Cookies & cream', c: ['#f6f5f1', '#1d1b20', '#2b2730', '#5a5360', '#f6f5f1'], deco: 'sparkles' },
+];
+const SLOTS = [['panel', 'Panel'], ['print', 'Drawing'], ['s1', 'Screen top'], ['s2', 'Screen bottom'], ['text', 'Text']];
+const FONTS = {
+  fredoka: { name: 'Bubbly', fam: 'Fredoka', w: 700 },
+  pacifico: { name: 'Fancy', fam: 'Pacifico', w: 400 },
+  caveat: { name: 'Handwritten', fam: 'Caveat', w: 700 },
+  dynapuff: { name: 'Puffy', fam: 'DynaPuff', w: 600 },
+  sniglet: { name: 'Chunky', fam: 'Sniglet', w: 800 },
+  comfortaa: { name: 'Round', fam: 'Comfortaa', w: 700 },
+  quicksand: { name: 'Clean', fam: 'Quicksand', w: 700 },
+  patrick: { name: 'Neat hand', fam: 'Patrick Hand', w: 400 },
+  lobster: { name: 'Retro', fam: 'Lobster', w: 400 },
+  pixel: { name: 'Pixel', fam: 'Press Start 2P', w: 400 },
+};
+const fontCss = (f, size) => `${f.w} ${size}px "${f.fam}", Fredoka, system-ui, sans-serif`;
 const CASES = {
   clear:   { name: 'Clear', color: 0xf3eefb, opacity: 0.28, roughness: 0.12, clearcoat: 1 },
   frosted: { name: 'Frosted', color: 0xf8f4fc, opacity: 0.6, roughness: 0.8, clearcoat: 0.15 },
 };
-const STICKER_OPTS = { off: 'Off', on: 'On' };
+const ONOFF = { off: 'Off', on: 'On' };
+const TEXT_OPTS = { on: 'Show text', off: 'No text' };
+const DEFAULT_MSG = 'This bg can be changed too!\nLmk if ya want more colours';
 
-// what she has picked; a shared link carries these in its #hash
-const state = { panel: 'black', panelHex: '#f7b6d0', doodle: 'sparkles', screen: 'night', screenHex: '#9fd8c8', stickers: 'off', finish: 'clear' };
-(function readHash() {
-  const p = new URLSearchParams(location.hash.slice(1));
-  const hex = v => (/^[0-9a-f]{6}$/i.test(v || '') ? '#' + v.toLowerCase() : null);
-  const pick = (key, table, field) => { const v = p.get(key); if (v && Object.hasOwn(table, v)) state[field] = v; };
-  const panel = p.get('panel') || '';
-  if (Object.hasOwn(PLATES, panel)) state.panel = panel;
-  else if (panel.startsWith('own-') && hex(panel.slice(4))) { state.panel = 'own'; state.panelHex = hex(panel.slice(4)); }
-  const screen = p.get('screen') || '';
-  if (Object.hasOwn(SCREENS, screen)) state.screen = screen;
-  else if (screen.startsWith('own-') && hex(screen.slice(4))) { state.screen = 'own'; state.screenHex = hex(screen.slice(4)); }
-  pick('drawing', DOODLES, 'doodle'); pick('stickers', STICKER_OPTS, 'stickers'); pick('case', CASES, 'finish');
-})();
-function writeHash() {
-  const p = new URLSearchParams({
-    panel: state.panel === 'own' ? 'own-' + state.panelHex.slice(1) : state.panel,
-    drawing: state.doodle,
-    screen: state.screen === 'own' ? 'own-' + state.screenHex.slice(1) : state.screen,
-    stickers: state.stickers,
-    case: state.finish,
-  });
-  try { history.replaceState(null, '', '#' + p.toString()); } catch (e) {}
+// everything she has picked
+const state = {
+  c: { panel: '#1c1821', print: '#f6eeff', s1: '#141029', s2: '#4a2f63', text: '#fbe9f3' }, mid: '#2a1d4f',
+  deco: 'night', bg: 'grad', pz: 1, px: 0.5, py: 0.5,
+  doodle: 'sparkles', stickers: 'off', layout: DEFAULT_LAYOUT.map(o => ({ ...o })), finish: 'clear',
+  font: 'fredoka', msg: DEFAULT_MSG, showText: 'on',
+};
+// her photo lives outside the state: the image itself, the original file, and its online id once uploaded
+const photo = { img: null, file: null, picId: null, uploading: null };
+
+/* ---------- picks as a short code (copied with the message, saved with the picks) ---------- */
+const layoutCode = L => L.map(o => [o.k, Math.round(o.x), Math.round(o.y), Math.round(o.r * 180 / Math.PI), Math.round(o.s * 100)].join(':')).join(',');
+const DEFAULT_LAYOUT_CODE = layoutCode(DEFAULT_LAYOUT);
+function encode() {
+  const p = new URLSearchParams();
+  p.set('c', SLOTS.map(([k]) => state.c[k].slice(1)).join('.'));
+  if (state.mid) p.set('mid', state.mid.slice(1));
+  p.set('deco', state.deco); p.set('bg', state.bg);
+  if (state.bg === 'photo') { p.set('pz', state.pz.toFixed(2)); p.set('px', state.px.toFixed(3)); p.set('py', state.py.toFixed(3)); if (photo.picId) p.set('pic', photo.picId); }
+  p.set('drawing', state.doodle); p.set('stickers', state.stickers); p.set('case', state.finish);
+  p.set('font', state.font); p.set('txt', state.showText);
+  if (state.msg !== DEFAULT_MSG) p.set('msg', state.msg);
+  const lc = layoutCode(state.layout); if (lc !== DEFAULT_LAYOUT_CODE) p.set('st', lc || '-');
+  return p.toString();
 }
-const plateNow = () => (state.panel === 'own' ? customPlate(state.panelHex) : PLATES[state.panel]);
-const screenNow = () => (state.screen === 'own' ? customScreen(state.screenHex) : SCREENS[state.screen]);
+// apply a code; returns the online photo id it names, if any
+function decode(str) {
+  const p = new URLSearchParams(String(str || '').replace(/^#/, '').trim());
+  const num = (v, lo, hi, d) => { const n = parseFloat(v); return Number.isFinite(n) ? Math.min(hi, Math.max(lo, n)) : d; };
+  const pick = (key, table, field) => { const v = p.get(key); if (v && Object.hasOwn(table, v)) state[field] = v; };
+  const cs = (p.get('c') || '').split('.');
+  if (cs.length === 5 && cs.every(h => isHex('#' + h))) SLOTS.forEach(([k], i) => { state.c[k] = '#' + cs[i].toLowerCase(); });
+  state.mid = isHex('#' + (p.get('mid') || '')) ? '#' + p.get('mid').toLowerCase() : (p.has('c') ? null : state.mid);
+  // older links from the first version
+  const panel = p.get('panel') || '';
+  if (Object.hasOwn(PLATES, panel)) { state.c.panel = PLATES[panel].bg[0]; state.c.print = PLATES[panel].art; }
+  else if (panel.startsWith('own-') && isHex('#' + panel.slice(4))) { state.c.panel = '#' + panel.slice(4); state.c.print = customPlate(state.c.panel).art; }
+  const screen = p.get('screen') || '';
+  if (Object.hasOwn(SCREENS, screen)) setScreenPreset(screen);
+  pick('deco', DECOS, 'deco'); pick('drawing', DOODLES, 'doodle'); pick('stickers', ONOFF, 'stickers'); pick('case', CASES, 'finish'); pick('font', FONTS, 'font'); pick('txt', TEXT_OPTS, 'showText');
+  if (p.get('bg') === 'photo' || p.get('bg') === 'grad') state.bg = p.get('bg');
+  state.pz = num(p.get('pz'), 1, 4, 1); state.px = num(p.get('px'), 0, 1, 0.5); state.py = num(p.get('py'), 0, 1, 0.5);
+  state.msg = p.has('msg') ? p.get('msg').slice(0, 90) : DEFAULT_MSG;
+  const st = p.get('st');
+  if (st === '-') state.layout = [];
+  else if (st) {
+    const L = st.split(',').slice(0, MAX_STICKERS).map(s => s.split(':')).filter(a => a.length === 5 && Object.hasOwn(STK, a[0]))
+      .map(([k, x, y, r, s]) => ({ k, x: num(x, 0, PW, 700), y: num(y, 0, PH, 470), r: num(r, -180, 180, 0) * Math.PI / 180, s: num(s, 25, 180, 70) / 100 }));
+    state.layout = L;
+  } else if (p.has('c') || p.has('panel')) state.layout = DEFAULT_LAYOUT.map(o => ({ ...o }));
+  const pic = p.get('pic');
+  return /^[\w\-\/]{1,200}\.(jpe?g|png|webp|gif)$/i.test(pic || '') && !pic.includes('..') ? pic : null;
+}
+function setScreenPreset(k) { const S = SCREENS[k]; state.c.s1 = S.s1; state.c.s2 = S.s2; state.c.text = S.text; state.mid = S.mid; state.deco = S.deco; state.bg = 'grad'; }
+function setPalette(P) { SLOTS.forEach(([k], i) => { state.c[k] = P.c[i]; }); state.mid = P.mid || null; state.deco = P.deco; state.bg = 'grad'; }
 
 /* ---------- scene ---------- */
 function arcRect(x0, y0, x1, y1, r, path = new THREE.Shape()) {
@@ -444,20 +622,21 @@ screenModule.position.set(0, 0, -6.3); screenModule.castShadow = true; thing.add
 
 // the panel
 function faceShape() { const s = arcRect(-FACE.w / 2, -FACE.h / 2, FACE.w / 2, FACE.h / 2, FACE.r); s.holes.push(arcRect(-WIN.w / 2, -WIN.h / 2, WIN.w / 2, WIN.h / 2, WIN.r, new THREE.Path())); return s; }
-const plateCanvas = canvas(FACE.w * 10, FACE.h * 10), plateTex = tex(plateCanvas);
+const plateCanvas = canvas(PW, PH), plateTex = tex(plateCanvas);
 const topM = new THREE.MeshStandardMaterial({ map: plateTex, roughness: 0.35, metalness: 0.04 });
 const edgeM = new THREE.MeshStandardMaterial({ color: PLATES.black.edge, roughness: 0.6 });
 const plate = new THREE.Mesh(new THREE.ExtrudeGeometry(faceShape(), { depth: 1.6, bevelEnabled: false, curveSegments: 18 }), edgeM);
 plate.position.z = 0.12; plate.castShadow = true; thing.add(plate);
 const top = new THREE.Mesh(shapePlane(faceShape(), -FACE.w / 2, -FACE.h / 2, FACE.w, FACE.h), topM);
 top.position.z = 1.74; thing.add(top);
-const stickerLayer = new THREE.Mesh(shapePlane(faceShape(), -FACE.w / 2, -FACE.h / 2, FACE.w, FACE.h), new THREE.MeshStandardMaterial({ map: tex(stickerOverlayTexture()), transparent: true, roughness: 0.35, depthWrite: false }));
+const stickerCanvas = canvas(PW, PH), stickerTex = tex(stickerCanvas);
+const stickerLayer = new THREE.Mesh(shapePlane(faceShape(), -FACE.w / 2, -FACE.h / 2, FACE.w, FACE.h), new THREE.MeshStandardMaterial({ map: stickerTex, transparent: true, roughness: 0.35, depthWrite: false }));
 stickerLayer.position.z = 1.8; stickerLayer.visible = false; thing.add(stickerLayer);
 
 /* ---------- drawing the panel (146 x 94 mm at 10 px/mm, origin top-left) ---------- */
 const WX0 = (FACE.w - WIN.w) / 2, WY0 = (FACE.h - WIN.h) / 2;
 function drawPlate(P, doodle) {
-  const g = plateCanvas.getContext('2d'), W = plateCanvas.width, H = plateCanvas.height, m = v => v * 10;
+  const g = plateCanvas.getContext('2d'), W = PW, H = PH, m = v => v * 10;
   const gr = g.createLinearGradient(0, 0, W, H); gr.addColorStop(0, P.bg[0]); gr.addColorStop(1, P.bg[1]);
   g.fillStyle = gr; g.fillRect(0, 0, W, H);
   // faint traces and vias under the colour
@@ -479,35 +658,57 @@ function drawPlate(P, doodle) {
   plateTex.needsUpdate = true;
 }
 
+/* ---------- stickers, wherever she put them (never over the window) ---------- */
+function drawStickers() {
+  const g = stickerCanvas.getContext('2d');
+  g.clearRect(0, 0, PW, PH);
+  g.save();
+  g.beginPath(); g.rect(0, 0, PW, PH); rrPath(g, WX0 * 10, WY0 * 10, WIN.w * 10, WIN.h * 10, WIN.r * 10); g.clip('evenodd');
+  state.layout.forEach(o => { const c = STK[o.k].c; g.save(); g.translate(o.x, o.y); g.rotate(o.r); g.scale(o.s, o.s); g.drawImage(c, -c.width / 2, -c.height / 2); g.restore(); });
+  g.restore();
+  stickerTex.needsUpdate = true;
+}
+
 /* ---------- drawing the screen ---------- */
-const SCREEN_TEXT = 'This bg can be changed too!\nLmk if ya want more colours';
-function cloud(g, x, y, s) { ell(g, x, y, 70 * s, 32 * s); ell(g, x - 54 * s, y + 8 * s, 44 * s, 24 * s); ell(g, x + 56 * s, y + 9 * s, 48 * s, 23 * s); ell(g, x - 8 * s, y - 24 * s, 42 * s, 32 * s); }
-function drawScreen(S) {
-  const g = screenCanvas.getContext('2d');
-  const gr = g.createLinearGradient(0, 0, 0, SCREEN_H); gr.addColorStop(0, S.stops[0]); gr.addColorStop(0.55, S.stops[1]); gr.addColorStop(1, S.stops[2]);
+function drawBackground(g, W, H) {
+  const k = W / SCREEN_W; g.save(); g.scale(k, k);
+  const C = state.c, mid = state.mid || mix(C.s1, C.s2, 0.5);
+  const gr = g.createLinearGradient(0, 0, 0, SCREEN_H); gr.addColorStop(0, C.s1); gr.addColorStop(0.55, mid); gr.addColorStop(1, C.s2);
   g.fillStyle = gr; g.fillRect(0, 0, SCREEN_W, SCREEN_H);
-  if (S.extra === 'night' || S.extra === 'sunset') {
-    const n = S.extra === 'night' ? 70 : 26;
+  if (state.bg === 'photo') {
+    if (photo.img) {
+      const iw = photo.img.width, ih = photo.img.height, s = Math.max(SCREEN_W / iw, SCREEN_H / ih) * state.pz, dw = iw * s, dh = ih * s;
+      g.drawImage(photo.img, -(dw - SCREEN_W) * state.px, -(dh - SCREEN_H) * state.py, dw, dh);
+    } else {
+      g.strokeStyle = 'rgba(255,255,255,0.55)'; g.setLineDash([18, 14]); g.lineWidth = 6; rr(g, 60, 60, SCREEN_W - 120, SCREEN_H - 120, 40); g.stroke(); g.setLineDash([]);
+      g.fillStyle = lum(C.s1) > 0.4 ? 'rgba(60,30,70,0.55)' : 'rgba(255,255,255,0.75)'; g.font = `600 44px Fredoka, system-ui, sans-serif`; g.textAlign = 'center';
+      g.fillText('a photo goes here', SCREEN_W / 2, 140); g.textAlign = 'left';
+    }
+    g.restore(); return;
+  }
+  const d = state.deco;
+  if (d === 'night' || d === 'sunset') {
+    const n = d === 'night' ? 70 : 26;
     for (let i = 0; i < n; i++) {
-      const x = (i * 263 + 41) % SCREEN_W, y = (i * 149 + 23) % (S.extra === 'night' ? SCREEN_H : 260), r = 1 + (i % 3) * 0.8;
-      g.globalAlpha = (0.35 + (i % 5) * 0.12) * (S.extra === 'night' ? 1 : 0.6); g.fillStyle = i % 4 ? '#ffffff' : '#ffe9b8'; ell(g, x, y, r, r);
+      const x = (i * 263 + 41) % SCREEN_W, y = (i * 149 + 23) % (d === 'night' ? SCREEN_H : 260), r = 1 + (i % 3) * 0.8;
+      g.globalAlpha = (0.35 + (i % 5) * 0.12) * (d === 'night' ? 1 : 0.6); g.fillStyle = i % 4 ? '#ffffff' : '#ffe9b8'; ell(g, x, y, r, r);
     }
     g.globalAlpha = 1;
   }
-  if (S.extra === 'night') { g.fillStyle = '#fff1c9'; ell(g, 1090, 150, 56, 56); g.fillStyle = gr; ell(g, 1114, 132, 52, 52); }
-  if (S.extra === 'sunset') {
+  if (d === 'night') { g.fillStyle = '#fff1c9'; ell(g, 1090, 150, 56, 56); g.fillStyle = gr; ell(g, 1114, 132, 52, 52); }
+  if (d === 'sunset') {
     const rg = g.createRadialGradient(1040, 610, 60, 1040, 610, 260); rg.addColorStop(0, 'rgba(255,226,160,0.6)'); rg.addColorStop(1, 'rgba(255,226,160,0)');
     g.fillStyle = rg; g.fillRect(700, 330, 580, 390);
     g.fillStyle = '#ffe1a0'; ell(g, 1040, 615, 96, 96);
     g.fillStyle = gr; [[630, 5], [655, 7], [682, 10]].forEach(([y, h]) => g.fillRect(930, y, 220, h));
   }
-  if (S.extra === 'clouds') {
+  if (d === 'clouds') {
     const rg = g.createRadialGradient(1100, 140, 40, 1100, 140, 150); rg.addColorStop(0, 'rgba(255,246,190,0.8)'); rg.addColorStop(1, 'rgba(255,246,190,0)');
     g.fillStyle = rg; g.fillRect(950, 0, 330, 300);
     g.fillStyle = '#fff4b8'; ell(g, 1100, 140, 58, 58);
     g.fillStyle = 'rgba(255,255,255,0.93)'; cloud(g, 1010, 196, 0.95); cloud(g, 236, 150, 0.85); cloud(g, 1070, 612, 0.85); cloud(g, 214, 604, 1.05);
   }
-  if (S.extra === 'hearts') {
+  if (d === 'hearts') {
     for (let i = 0; i < 26; i++) {
       const x = (i * 331 + 77) % SCREEN_W, y = (i * 197 + 41) % SCREEN_H;
       if (x > 140 && x < 1140 && y > 250 && y < 500) continue;
@@ -515,94 +716,362 @@ function drawScreen(S) {
     }
     g.globalAlpha = 1;
   }
-  if (S.extra !== 'clouds') {
+  if (d === 'night' || d === 'sunset' || d === 'sparkles' || d === 'hearts') {
     g.globalAlpha = 0.8; g.fillStyle = '#ffffff';
     [[250, 190, 22], [1010, 540, 26], [330, 560, 16], [930, 200, 14], [1150, 430, 12]].forEach(([x, y, r]) => spark(g, x, y, r));
     g.globalAlpha = 1;
   }
-  // the message, sized to sit well inside the screen with a heart after it
-  const lines = SCREEN_TEXT.split('\n');
-  let size = 80; g.font = `700 ${size}px ${FONT}`;
+  g.restore();
+}
+function drawText(g) {
+  const lines = state.msg.split('\n').map(l => l.trim()).filter(Boolean).slice(0, 3);
+  if (!lines.length) return;
+  const F = FONTS[state.font], col = state.c.text, darkText = lum(col) < 0.35;
+  let size = 80; g.font = fontCss(F, size);
   const widest = Math.max(...lines.map(l => g.measureText(l).width));
-  if (widest > 880) { size = Math.floor(size * 880 / widest); g.font = `700 ${size}px ${FONT}`; }
+  const room = lines.length > 2 ? 840 : 880;
+  if (widest > room) size = Math.floor(size * room / widest);
+  size = Math.min(size, Math.floor(430 / (lines.length * 1.24)));
+  g.font = fontCss(F, size);
   const lh = size * 1.24, cx = 610, y0 = 372 - (lines.length - 1) * lh / 2;
+  const glow = darkText ? 'rgba(255,255,255,0.65)' : 'rgba(0,0,0,0.3)';
   g.textAlign = 'center'; g.textBaseline = 'middle';
-  lines.forEach((l, i) => { g.fillStyle = S.glow; g.fillText(l, cx + 3, y0 + i * lh + 5); g.fillStyle = S.text; g.fillText(l, cx, y0 + i * lh); });
+  if (state.bg === 'photo') { g.shadowColor = darkText ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.55)'; g.shadowBlur = 18; }
+  lines.forEach((l, i) => { g.fillStyle = glow; g.fillText(l, cx + 3, y0 + i * lh + 5); g.fillStyle = col; g.fillText(l, cx, y0 + i * lh); });
   const lastW = g.measureText(lines[lines.length - 1]).width;
-  g.fillStyle = S.heart; heart(g, cx + lastW / 2 + size * 0.62, y0 + (lines.length - 1) * lh - size * 0.04, size * 0.78);
+  heart(g, cx + lastW / 2 + size * 0.62, y0 + (lines.length - 1) * lh - size * 0.04, size * 0.78);
+  g.shadowColor = 'transparent'; g.shadowBlur = 0;
   g.textAlign = 'left'; g.textBaseline = 'alphabetic';
+}
+function drawScreen() {
+  const g = screenCanvas.getContext('2d');
+  drawBackground(g, SCREEN_W, SCREEN_H);
+  if (state.showText === 'on') drawText(g);
   screenTex.needsUpdate = true;
 }
 
 /* ---------- the controls ---------- */
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-// panel colours: round swatches, then a rainbow one that opens a colour wheel
-$('colours').innerHTML = Object.entries(PLATES).map(([k, P]) => `<button class="sw" type="button" data-v="${k}" aria-label="${esc(P.name)}" title="${esc(P.name)}"><span class="dot" style="background:${P.bg[0]}"></span></button>`).join('')
-  + `<label class="sw" data-v="own" title="Pick any colour"><span class="dot rainbow"></span><input type="color" id="panelWheel" aria-label="Pick any panel colour" value="${state.panelHex}"></label>`;
-// screens: little previews of each background
-$('screens').innerHTML = Object.entries(SCREENS).map(([k, S]) => `<button class="th" type="button" data-v="${k}" aria-label="${esc(S.name)}" title="${esc(S.name)}"><span class="prev" style="background:linear-gradient(${S.stops[0]}, ${S.stops[1]} 55%, ${S.stops[2]})"></span></button>`).join('')
-  + `<label class="th" data-v="own" title="Pick any colour"><span class="prev rainbow"></span><input type="color" id="screenWheel" aria-label="Pick any screen colour" value="${state.screenHex}"></label>`;
-const segHtml = table => Object.entries(table).map(([k, v]) => `<button type="button" data-v="${k}">${esc(typeof v === 'string' ? v : v.name)}</button>`).join('');
-$('doodles').innerHTML = segHtml(DOODLES);
-$('stickerSeg').innerHTML = segHtml(STICKER_OPTS);
-$('cases').innerHTML = segHtml(CASES);
+const segHtml = (table, style) => Object.entries(table).map(([k, v]) => `<button type="button" data-v="${k}"${style ? ` style="${style(k)}"` : ''}>${esc(typeof v === 'string' ? v : v.name)}</button>`).join('');
 
-const GROUPS = { colours: 'panel', screens: 'screen', doodles: 'doodle', stickerSeg: 'stickers', cases: 'finish' };
+$('pals').innerHTML = PALETTES.map((P, i) => `<button class="pal" type="button" data-i="${i}" aria-label="${esc(P.name)}"><span class="stripes">${P.c.map(h => `<span style="background:${h}"></span>`).join('')}</span><span class="nm">${esc(P.name)}</span></button>`).join('');
+$('slots').innerHTML = SLOTS.map(([k, name]) => `<label class="slot"><span class="dot" id="dot-${k}"></span>${esc(name)}<input type="color" id="slot-${k}" aria-label="${esc(name)} colour"></label>`).join('');
+$('colours').innerHTML = Object.entries(PLATES).map(([k, P]) => `<button class="sw" type="button" data-v="${k}" aria-label="${esc(P.name)}" title="${esc(P.name)}"><span class="dot" style="background:${P.bg[0]}"></span></button>`).join('')
+  + `<label class="sw" data-v="own" title="Pick any colour"><span class="dot rainbow"></span><input type="color" id="panelWheel" aria-label="Pick any panel colour" value="#f7b6d0"></label>`;
+$('screens').innerHTML = Object.entries(SCREENS).map(([k, S]) => `<button class="th" type="button" data-v="${k}" aria-label="${esc(S.name)}" title="${esc(S.name)}"><span class="prev" style="background:linear-gradient(${S.s1}, ${S.mid} 55%, ${S.s2})"></span></button>`).join('')
+  + `<label class="th" data-v="own" title="Pick any colour"><span class="prev rainbow"></span><input type="color" id="screenWheel" aria-label="Pick any screen colour" value="#9fd8c8"></label>`
+  + `<button class="th" type="button" data-v="photo" id="photoTile" aria-label="Use a photo" title="Use a photo"><span class="prev" id="photoPrev">Photo</span></button>`;
+$('doodles').innerHTML = segHtml(DOODLES);
+$('decos').innerHTML = segHtml(DECOS);
+$('stickerSeg').innerHTML = segHtml(ONOFF);
+$('textSeg').innerHTML = segHtml(TEXT_OPTS);
+$('fonts').innerHTML = segHtml(FONTS, k => `font-family:'${FONTS[k].fam}', Fredoka, sans-serif;font-weight:${FONTS[k].w}`);
+$('cases').innerHTML = segHtml(CASES);
+$('tray').innerHTML = Object.entries(STK).map(([k, S]) => `<button type="button" data-k="${k}" aria-label="Add ${esc(S.name)}" title="${esc(S.name)}"><img alt="" src="${S.c.toDataURL()}"></button>`).join('');
+$('msg').value = state.msg;
+
+const GROUPS = { doodles: 'doodle', decos: 'deco', stickerSeg: 'stickers', textSeg: 'showText', fonts: 'font', cases: 'finish' };
 let queued = false;
 function update() { if (!queued) { queued = true; requestAnimationFrame(() => { queued = false; apply(); }); } }
+function screenKey() {
+  if (state.bg === 'photo') return 'photo';
+  const C = state.c;
+  return Object.keys(SCREENS).find(k => { const S = SCREENS[k]; return S.s1 === C.s1 && S.s2 === C.s2 && S.text === C.text && S.deco === state.deco; }) || 'own';
+}
+const paletteIndex = () => PALETTES.findIndex(P => SLOTS.every(([k], i) => P.c[i] === state.c[k]));
+let persistTimer = 0;
 function apply() {
-  const P = plateNow(), S = screenNow(), C = CASES[state.finish];
+  const P = plateNow(), C = CASES[state.finish];
   drawPlate(P, state.doodle);
   topM.roughness = P.rough; edgeM.color.setHex(P.edge);
-  drawScreen(S);
+  drawScreen();
+  drawStickers();
   stickerLayer.visible = state.stickers === 'on';
   boxMat.color.setHex(C.color); boxMat.opacity = C.opacity; boxMat.roughness = C.roughness; boxMat.clearcoat = C.clearcoat;
-  $('colourName').textContent = state.panel === 'own' ? 'Your own' : P.name;
-  $('screenName').textContent = state.screen === 'own' ? 'Your own' : S.name;
-  Object.entries(GROUPS).forEach(([id, field]) => $(id).querySelectorAll('[data-v]').forEach(el => {
-    const on = el.dataset.v === state[field];
-    el.classList.toggle('on', on);
-    if (el.tagName === 'BUTTON') el.setAttribute('aria-pressed', String(on));
-  }));
-  writeHash();
+
+  const sk = stockKey(state.c.panel), sc = screenKey(), pi = paletteIndex();
+  $('colourName').textContent = sk ? PLATES[sk].name : 'Your own';
+  $('screenName').textContent = sc === 'photo' ? 'Your photo' : sc === 'own' ? 'Your own' : SCREENS[sc].name;
+  $('palName').textContent = pi >= 0 ? PALETTES[pi].name : 'Your own mix';
+  $('colours').querySelectorAll('[data-v]').forEach(el => setOn(el, el.dataset.v === (sk || 'own')));
+  $('screens').querySelectorAll('[data-v]').forEach(el => setOn(el, el.dataset.v === sc));
+  $('pals').querySelectorAll('.pal').forEach(el => setOn(el, +el.dataset.i === pi));
+  SLOTS.forEach(([k]) => { $('dot-' + k).style.background = state.c[k]; const inp = $('slot-' + k); if (document.activeElement !== inp) inp.value = state.c[k]; });
+  Object.entries(GROUPS).forEach(([id, field]) => $(id).querySelectorAll('[data-v]').forEach(el => setOn(el, el.dataset.v === state[field])));
+  $('decoBox').hidden = state.bg === 'photo';
+  $('photoBox').hidden = state.bg !== 'photo';
+  $('photoHint').textContent = photo.img ? 'Drag the picture to move it, use the slider to zoom.' : 'These picks use a photo. Tap below to load it.';
+  $('changePhoto').textContent = photo.img ? 'Use a different pic' : 'Load the photo';
+  $('zoom').value = state.pz;
+  const n = state.layout.length;
+  $('stickerCount').textContent = state.stickers === 'on' ? `${n} sticker${n === 1 ? '' : 's'}` : '';
+  if (sel >= n) sel = -1;
+  $('selBox').hidden = sel < 0 || state.stickers !== 'on';
+  if (sel >= 0) { $('stSize').value = Math.round(state.layout[sel].s * 100); $('stTurn').value = Math.round(state.layout[sel].r * 180 / Math.PI); }
+  drawEditor(); drawPhotoPad();
+  $('savePhoto').hidden = !photo.img;
+  clearTimeout(persistTimer);
+  persistTimer = setTimeout(() => {
+    const code = encode();
+    try { localStorage.setItem('lumii-picks', code); } catch (e) {}
+    try { history.replaceState(null, '', '#' + code); } catch (e) {}
+  }, 400);
 }
-Object.entries(GROUPS).forEach(([id, field]) => $(id).querySelectorAll('button[data-v]').forEach(b => b.addEventListener('click', () => { state[field] = b.dataset.v; update(); })));
-// the colour wheels: tapping selects "your own", dragging round the wheel updates live
-[['panelWheel', 'panel', 'panelHex'], ['screenWheel', 'screen', 'screenHex']].forEach(([id, field, hexField]) => {
-  const input = $(id);
-  input.addEventListener('click', () => { state[field] = 'own'; update(); });
-  input.addEventListener('input', () => { state[field] = 'own'; state[hexField] = input.value.toLowerCase(); update(); });
+function setOn(el, on) { el.classList.toggle('on', on); if (el.tagName === 'BUTTON') el.setAttribute('aria-pressed', String(on)); }
+
+Object.entries(GROUPS).forEach(([id, field]) => $(id).querySelectorAll('button[data-v]').forEach(b => b.addEventListener('click', () => {
+  state[field] = b.dataset.v;
+  if (field === 'font') { const F = FONTS[state.font]; document.fonts.load(fontCss(F, 80)).then(update, update); }
+  update();
+})));
+$('pals').querySelectorAll('.pal').forEach(b => b.addEventListener('click', () => { setPalette(PALETTES[+b.dataset.i]); update(); }));
+SLOTS.forEach(([k]) => $('slot-' + k).addEventListener('input', e => { state.c[k] = e.target.value.toLowerCase(); if (k === 's1' || k === 's2') state.mid = null; if (state.bg === 'photo' && (k === 's1' || k === 's2')) state.bg = 'grad'; update(); }));
+$('colours').querySelectorAll('button[data-v]').forEach(b => b.addEventListener('click', () => { const P = PLATES[b.dataset.v]; state.c.panel = P.bg[0]; state.c.print = P.art; update(); }));
+$('panelWheel').addEventListener('input', e => { const hex = e.target.value.toLowerCase(); state.c.panel = hex; state.c.print = customPlate(hex).art; update(); });
+$('screens').querySelectorAll('button[data-v]').forEach(b => b.addEventListener('click', () => {
+  if (b.dataset.v === 'photo') { if (photo.img) { state.bg = 'photo'; update(); } else $('photoInput').click(); return; }
+  setScreenPreset(b.dataset.v); update();
+}));
+$('screenWheel').addEventListener('input', e => {
+  const hex = e.target.value.toLowerCase(), light = lum(hex) > 0.35;
+  state.c.s1 = shade(hex, 0.8); state.c.s2 = shade(hex, 1.15); state.mid = hex; state.c.text = light ? shade(hex, 0.32) : '#fff6fb'; state.bg = 'grad'; update();
+});
+$('msg').addEventListener('input', e => { state.msg = e.target.value.slice(0, 90); update(); });
+
+/* ---------- her photo ---------- */
+function photoToCanvas(img) {
+  const iw = img.naturalWidth || img.width, ih = img.naturalHeight || img.height, k = Math.min(1, 2560 / Math.max(iw, ih));
+  const c = canvas(Math.round(iw * k), Math.round(ih * k)); c.getContext('2d').drawImage(img, 0, 0, c.width, c.height); return c;
+}
+function loadImage(src, cors = false) { return new Promise((res, rej) => { const i = new Image(); if (cors) i.crossOrigin = 'anonymous'; i.onload = () => res(i); i.onerror = rej; i.src = src; }); }
+$('photoInput').addEventListener('change', async e => {
+  const file = e.target.files && e.target.files[0]; e.target.value = '';
+  if (!file) return;
+  const url = URL.createObjectURL(file);
+  try {
+    const img = await loadImage(url);
+    photo.img = photoToCanvas(img); photo.file = file; photo.picId = null;
+    state.bg = 'photo'; state.pz = 1; state.px = 0.5; state.py = 0.5;
+    setPhotoPrev(url);
+    update();
+    if (cloudOn) uploadPhoto();
+  } catch (err) { URL.revokeObjectURL(url); setStatus("What bomboclart file bruv try a JPG or PNG or screenshot it and use that screenshot idk why it ain't working"); }
+});
+function setPhotoPrev(src) { const p = $('photoPrev'); p.textContent = ''; p.style.background = `center / cover no-repeat url("${src}")`; }
+$('changePhoto').addEventListener('click', () => $('photoInput').click());
+$('zoom').addEventListener('input', e => { state.pz = parseFloat(e.target.value) || 1; update(); });
+// dragging the photo around inside the screen
+const pad = $('photoPad');
+let padDrag = null;
+pad.addEventListener('pointerdown', e => { if (!photo.img) return; pad.setPointerCapture(e.pointerId); padDrag = { x: e.clientX, y: e.clientY }; });
+pad.addEventListener('pointermove', e => {
+  if (!padDrag || !photo.img) return;
+  const k = SCREEN_W / pad.clientWidth, iw = photo.img.width, ih = photo.img.height, s = Math.max(SCREEN_W / iw, SCREEN_H / ih) * state.pz;
+  const ox = iw * s - SCREEN_W, oy = ih * s - SCREEN_H;
+  if (ox > 0.5) state.px = Math.min(1, Math.max(0, state.px - (e.clientX - padDrag.x) * k / ox));
+  if (oy > 0.5) state.py = Math.min(1, Math.max(0, state.py - (e.clientY - padDrag.y) * k / oy));
+  padDrag = { x: e.clientX, y: e.clientY }; update();
+});
+['pointerup', 'pointercancel'].forEach(t => pad.addEventListener(t, () => { padDrag = null; }));
+function sizeCanvas(cv) { const dpr = Math.min(window.devicePixelRatio || 1, 2), w = Math.round(cv.clientWidth * dpr), h = Math.round(cv.clientHeight * dpr); if (w && h && (cv.width !== w || cv.height !== h)) { cv.width = w; cv.height = h; } return w && h; }
+function drawPhotoPad() {
+  if (state.bg !== 'photo' || !sizeCanvas(pad)) return;
+  const g = pad.getContext('2d'); g.drawImage(screenCanvas, 0, 0, pad.width, pad.height);
+}
+
+/* ---------- the sticker editor ---------- */
+const ed = $('stickerEd');
+let sel = -1;
+const pointers = new Map();
+let drag = null, pinch = null;
+function drawEditor() {
+  if (!sizeCanvas(ed)) return;
+  const g = ed.getContext('2d'), k = ed.width / PW;
+  g.setTransform(1, 0, 0, 1, 0, 0); g.clearRect(0, 0, ed.width, ed.height);
+  g.setTransform(k, 0, 0, k, 0, 0);
+  g.save(); rr(g, 0, 0, PW, PH, FACE.r * 10); g.clip();
+  g.drawImage(plateCanvas, 0, 0);
+  g.save(); rr(g, WX0 * 10, WY0 * 10, WIN.w * 10, WIN.h * 10, WIN.r * 10); g.clip();
+  g.drawImage(screenCanvas, (WX0 - (PIC_W - WIN.w) / 2) * 10, (WY0 - (PIC_H - WIN.h) / 2) * 10, PIC_W * 10, PIC_H * 10);
+  g.restore();
+  if (state.stickers === 'on') {
+    g.drawImage(stickerCanvas, 0, 0);
+    // ghost anything sitting over the window, so it can be dragged back out
+    g.save(); rr(g, WX0 * 10, WY0 * 10, WIN.w * 10, WIN.h * 10, WIN.r * 10); g.clip(); g.globalAlpha = 0.35;
+    state.layout.forEach(o => { const c = STK[o.k].c; g.save(); g.translate(o.x, o.y); g.rotate(o.r); g.scale(o.s, o.s); g.drawImage(c, -c.width / 2, -c.height / 2); g.restore(); });
+    g.restore();
+    const o = state.layout[sel];
+    if (o) {
+      const c = STK[o.k].c;
+      g.save(); g.translate(o.x, o.y); g.rotate(o.r);
+      g.strokeStyle = '#ffffff'; g.lineWidth = 7 / k; g.strokeRect(-c.width * o.s / 2 - 6, -c.height * o.s / 2 - 6, c.width * o.s + 12, c.height * o.s + 12);
+      g.setLineDash([10 / k, 7 / k]); g.strokeStyle = '#ec8fb5'; g.lineWidth = 3.5 / k; g.strokeRect(-c.width * o.s / 2 - 6, -c.height * o.s / 2 - 6, c.width * o.s + 12, c.height * o.s + 12);
+      g.restore();
+    }
+  } else {
+    g.fillStyle = 'rgba(253,249,253,0.75)'; g.font = `600 ${Math.round(36)}px Fredoka, system-ui, sans-serif`; g.textAlign = 'center';
+    g.fillText('Stickers are off. Tap one below to start.', PW / 2, PH - 40); g.textAlign = 'left';
+  }
+  g.restore();
+}
+const toPlate = e => { const b = ed.getBoundingClientRect(); return { x: (e.clientX - b.left) / b.width * PW, y: (e.clientY - b.top) / b.height * PH }; };
+function hitTest(p) {
+  for (let i = state.layout.length - 1; i >= 0; i--) {
+    const o = state.layout[i], c = STK[o.k].c, dx = p.x - o.x, dy = p.y - o.y;
+    const lx = (dx * Math.cos(o.r) + dy * Math.sin(o.r)) / o.s, ly = (-dx * Math.sin(o.r) + dy * Math.cos(o.r)) / o.s;
+    const hw = Math.max(c.width / 2, 40 / o.s), hh = Math.max(c.height / 2, 40 / o.s);
+    if (Math.abs(lx) <= hw && Math.abs(ly) <= hh) return i;
+  }
+  return -1;
+}
+const clampXY = o => { o.x = Math.min(PW, Math.max(0, o.x)); o.y = Math.min(PH, Math.max(0, o.y)); };
+function startDrag(p) { const o = state.layout[sel]; drag = o ? { ox: o.x - p.x, oy: o.y - p.y } : null; }
+function pinchInfo() { const [a, b] = [...pointers.values()]; return { d: Math.hypot(b.x - a.x, b.y - a.y), a: Math.atan2(b.y - a.y, b.x - a.x) }; }
+ed.addEventListener('pointerdown', e => {
+  if (state.stickers !== 'on') return;
+  ed.setPointerCapture(e.pointerId);
+  const p = toPlate(e); pointers.set(e.pointerId, p);
+  if (pointers.size === 1) { sel = hitTest(p); startDrag(p); update(); }
+  else if (pointers.size === 2 && sel >= 0) { const o = state.layout[sel], i = pinchInfo(); pinch = { d0: i.d, a0: i.a, s0: o.s, r0: o.r }; drag = null; }
+});
+ed.addEventListener('pointermove', e => {
+  if (!pointers.has(e.pointerId)) return;
+  const p = toPlate(e); pointers.set(e.pointerId, p);
+  const o = state.layout[sel]; if (!o) return;
+  if (pinch && pointers.size >= 2) { const i = pinchInfo(); o.s = Math.min(1.8, Math.max(0.25, pinch.s0 * i.d / Math.max(1, pinch.d0))); o.r = pinch.r0 + (i.a - pinch.a0); update(); }
+  else if (drag) { o.x = p.x + drag.ox; o.y = p.y + drag.oy; clampXY(o); update(); }
+});
+function endPointer(e) {
+  pointers.delete(e.pointerId);
+  if (pointers.size < 2) pinch = null;
+  if (pointers.size === 1) startDrag([...pointers.values()][0]); else if (!pointers.size) drag = null;
+}
+ed.addEventListener('pointerup', endPointer); ed.addEventListener('pointercancel', endPointer);
+// keyboard nudging for whoever prefers it
+ed.tabIndex = 0;
+ed.addEventListener('keydown', e => {
+  const o = state.layout[sel]; if (!o) return;
+  const step = e.shiftKey ? 40 : 10, mv = { ArrowLeft: [-step, 0], ArrowRight: [step, 0], ArrowUp: [0, -step], ArrowDown: [0, step] }[e.key];
+  if (mv) { o.x += mv[0]; o.y += mv[1]; clampXY(o); update(); e.preventDefault(); }
+  if (e.key === 'Delete' || e.key === 'Backspace') { state.layout.splice(sel, 1); sel = -1; update(); e.preventDefault(); }
+});
+$('tray').querySelectorAll('button').forEach(b => b.addEventListener('click', () => {
+  if (state.layout.length >= MAX_STICKERS) { setStatus('Lady you\'ve used FORTY FRIGGIN STICKERS YAH you gotta remove some ya goose'); return; }
+  if (state.stickers !== 'on') { state.stickers = 'on'; if (!state.layout.length) state.layout = []; }
+  const n = state.layout.length;
+  // new ones land along the bottom border, never under the screen
+  state.layout.push({ k: b.dataset.k, x: 330 + ((n * 173) % 800), y: 860, r: ((n % 5) - 2) * 0.12, s: 0.55 });
+  sel = state.layout.length - 1; update();
+}));
+$('stSize').addEventListener('input', e => { const o = state.layout[sel]; if (o) { o.s = e.target.value / 100; update(); } });
+$('stTurn').addEventListener('input', e => { const o = state.layout[sel]; if (o) { o.r = e.target.value * Math.PI / 180; update(); } });
+$('stFront').addEventListener('click', () => { if (sel < 0) return; const [o] = state.layout.splice(sel, 1); state.layout.push(o); sel = state.layout.length - 1; update(); });
+$('stDel').addEventListener('click', () => { if (sel < 0) return; state.layout.splice(sel, 1); sel = -1; update(); });
+$('stReset').addEventListener('click', () => { state.layout = DEFAULT_LAYOUT.map(o => ({ ...o })); state.stickers = 'on'; sel = -1; update(); });
+$('stClear').addEventListener('click', () => { state.layout = []; sel = -1; update(); });
+new ResizeObserver(() => update()).observe(ed);
+new ResizeObserver(() => update()).observe(pad);
+
+/* ---------- her photo online (Cloudinary), and saving files ---------- */
+const UPLOADABLE = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+const EXT = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp', 'image/gif': 'gif' };
+const setStatus = t => { $('status').textContent = t; };
+function uploadPhoto() {
+  if (!cloudOn || !photo.img) return;
+  const mine = photo.file;
+  $('photoUp').textContent = 'Uploading your pic...';
+  photo.uploading = (async () => {
+    let blob = mine;
+    if (!blob || !UPLOADABLE.includes(blob.type) || blob.size > 9.5 * 1024 * 1024) blob = await new Promise(r => photo.img.toBlob(r, 'image/jpeg', 0.92));
+    const fd = new FormData();
+    fd.append('file', blob, 'lea-pic.' + (EXT[blob.type] || 'jpg'));
+    fd.append('upload_preset', CLOUDINARY.uploadPreset);
+    const r = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY.cloudName}/image/upload`, { method: 'POST', body: fd });
+    if (!r.ok) throw new Error('upload ' + r.status);
+    const j = await r.json();
+    if (photo.file === mine) { photo.picId = `v${j.version}/${j.public_id}.${j.format}`; $('photoUp').textContent = 'Pic uploaded, it goes with your link.'; }
+  })().catch(() => { if (photo.file === mine) $('photoUp').textContent = "Couldn't upload the pic, so it'll get attached to your message instead."; })
+    .finally(() => { photo.uploading = null; update(); });
+}
+async function loadOnlinePhoto(id) {
+  try {
+    const img = await loadImage(picUrl(id), true);
+    photo.img = photoToCanvas(img); photo.file = null; photo.picId = id;
+    state.bg = 'photo'; setPhotoPrev(picUrl(id)); update();
+    $('photoUp').textContent = 'This is the pic from the link.';
+  } catch (e) { $('photoUp').textContent = "Couldn't load the pic from this link."; }
+}
+function saveBlob(blob, name) {
+  const url = URL.createObjectURL(blob), a = document.createElement('a');
+  a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 30000);
+}
+$('savePhoto').addEventListener('click', async () => {
+  try {
+    let blob = photo.file;
+    if (!blob && photo.picId) blob = await (await fetch(picUrl(photo.picId))).blob();
+    if (!blob && photo.img) blob = await new Promise(r => photo.img.toBlob(r, 'image/jpeg', 0.92));
+    if (blob) saveBlob(blob, 'lea-pic.' + (EXT[blob.type] || 'jpg'));
+  } catch (e) { $('photoUp').textContent = "Couldn't download the pic, long press it instead."; }
+});
+$('saveScreen').addEventListener('click', () => {
+  const c = canvas(SCREEN_W, SCREEN_H); drawBackground(c.getContext('2d'), SCREEN_W, SCREEN_H);
+  try { c.toBlob(b => { if (b) saveBlob(b, 'lumii-screen.png'); }, 'image/png'); } catch (e) { setStatus("Couldn't save the screen image."); }
 });
 
-// sending her picks back: share sheet on a phone, otherwise copy to the clipboard
-function summary() {
-  const P = plateNow(), S = screenNow();
+/* ---------- sending her picks back: share sheet on a phone, otherwise copy to the clipboard ---------- */
+function summary(link) {
+  const sk = stockKey(state.c.panel), sc = screenKey(), pi = paletteIndex(), F = FONTS[state.font];
   const lines = [
     "Supreme Leader's picks <3",
-    `Panel colour: ${state.panel === 'own' ? 'her own colour ' + state.panelHex : P.name}`,
+    `Colour scheme: ${pi >= 0 ? PALETTES[pi].name : 'her own mix'} (${SLOTS.map(([k, n]) => `${n.toLowerCase()} ${state.c[k]}`).join(', ')})`,
+    `Panel colour: ${sk ? PLATES[sk].name : 'her own colour ' + state.c.panel}`,
     `Little drawing: ${DOODLES[state.doodle]}`,
-    `Screen background: ${state.screen === 'own' ? 'her own colour ' + state.screenHex : S.name}`,
-    `Stickers: ${STICKER_OPTS[state.stickers]}`,
+    `Screen background: ${sc === 'photo' ? 'her own photo' : sc === 'own' ? 'her own colours' : SCREENS[sc].name}${state.bg === 'grad' ? ', extras: ' + DECOS[state.deco] : ''}`,
+    `Screen text: ${state.showText === 'on' ? `"${state.msg.replace(/\n/g, ' / ')}" in ${F.name} (${F.fam})` : 'none'}`,
+    `Stickers: ${state.stickers === 'on' ? `${state.layout.length} placed` : 'Off'}`,
     `Case: ${CASES[state.finish].name}`,
   ];
   const note = $('note').value.trim();
   if (note) lines.push('', note);
-  writeHash();
-  lines.push('', location.href);
+  lines.push('', link);
   return lines.join('\n');
 }
-const setStatus = t => { $('status').textContent = t; };
-$('sendBtn').addEventListener('click', async () => {
-  const text = summary();
+async function copyFallback(text, needPic) {
+  const pic = needPic ? ' AND send me the pic u used pls (theres a download button under it)' : '';
+  try { await navigator.clipboard.writeText(text); setStatus('Copieddd!!!! pls send to me on viber actually whatsapp coz then it can show on pc idrc actually send anywhere to me mwahhhh' + pic); }
+  catch (e) { $('fallback').textContent = text; $('fallback').hidden = false; setStatus('Some stupid error happened, can ya just ss n send to me. Thanksssssss' + pic); }
+}
+$('sendBtn').addEventListener('click', () => {
   $('fallback').hidden = true;
+  if (photo.uploading) { setStatus('Waitttttt ladyyyy, your pics still uploading raahhhh. Wait a second'); return; }
+  const code = encode();
+  try { history.replaceState(null, '', '#' + code); } catch (e) {}
+  const text = summary(location.href);
+  const needPic = state.bg === 'photo' && !!photo.img && !photo.picId;
   if (navigator.share) {
-    try { await navigator.share({ title: "Supreme Leader's picks", text }); setStatus('thank youuu my loveee mwah mwah'); return; }
-    catch (e) { if (e && e.name === 'AbortError') return; }
+    const data = { title: "Supreme Leader's picks", text };
+    if (needPic && photo.file) {
+      const f = new File([photo.file], 'lea-pic.' + (EXT[photo.file.type] || 'jpg'), { type: photo.file.type || 'image/jpeg' });
+      try { if (navigator.canShare && navigator.canShare({ files: [f] })) data.files = [f]; } catch (e) {}
+    }
+    navigator.share(data)
+      .then(() => setStatus('thank youuu my loveee mwah mwah' + (needPic && !data.files ? ' (send me the pic too pls)' : '')))
+      .catch(e => { if (e && e.name === 'AbortError') return; copyFallback(text, needPic); });
+    return;
   }
-  try { await navigator.clipboard.writeText(text); setStatus('Copieddd!!!! pls send to me on viber actually whatsapp coz then it can show on pc idrc actually send anywhere to me mwahhhh'); }
-  catch (e) { $('fallback').textContent = text; $('fallback').hidden = false; setStatus("Some stupid error happened, can ya just ss n send to me. Thanksssssss"); }
+  copyFallback(text, needPic);
 });
+$('codeGo').addEventListener('click', () => {
+  const v = $('codeIn').value.trim();
+  if (!v) return;
+  const pic = decode(v.includes('#') ? v.slice(v.indexOf('#') + 1) : v.replace(/^Code:\s*/i, ''));
+  $('msg').value = state.msg; sel = -1;
+  if (pic && cloudOn) loadOnlinePhoto(pic); else if (state.bg === 'photo' && !photo.img) state.bg = 'grad';
+  update(); setStatus('Loaded those picks.');
+});
+
 
 /* ---------- framing and the render loop ---------- */
 function resize() {
@@ -620,8 +1089,16 @@ function resize() {
 }
 new ResizeObserver(resize).observe(stageEl);
 resize();
+
+// open her link exactly as she sent it; otherwise start from whatever was picked last time on this phone
+let startPic = null;
+if (location.hash.includes('=')) { try { startPic = decode(location.hash); } catch (e) {} }
+else { try { const saved = localStorage.getItem('lumii-picks'); if (saved) startPic = decode(saved); } catch (e) {} }
+$('msg').value = state.msg;
+if (state.bg === 'photo' && !photo.img && !(startPic && cloudOn)) state.bg = 'grad';
 apply();
-// redraw once the rounded font has definitely loaded
+if (startPic && cloudOn) loadOnlinePhoto(startPic);
+document.fonts.load(fontCss(FONTS[state.font], 80)).then(update, update);
 document.fonts.ready.then(update);
 
 function loop() {
